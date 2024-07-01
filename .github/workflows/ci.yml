@@ -30,10 +30,13 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: List build directory contents
+        run: ls -la dist
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          name: github-pages
+          name: build
           path: dist
 
   deploy:
@@ -47,8 +50,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    # Specify runner + deployment step
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
+        with:
+          artifact-name: build
