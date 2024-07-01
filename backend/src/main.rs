@@ -1,40 +1,66 @@
-use std::{
-    fs,
-    io::{BufRead, BufReader, Write},
-    net::{TcpListener, TcpStream},
-};
+use std::io::prelude::*;
+use std::net::{TcpListener, TcpStream};
+use std::thread;
 
-fn main() -> anyhow::Result<()> {
-    let listener = TcpListener::bind("127.0.0.1:7878")?;
-    for stream in listener.incoming() {
-        let stream = stream?;
+fn handle_client(mut stream: TcpStream) {
+    let mut buffer = [0; 512];
+    stream.read(&mut buffer).unwrap();
+    let request = String::from_utf8_lossy(&buffer[..]);
 
-        println!("Connection established");
-        handle_connection(stream)?;
+    println!("{}", request);
+
+    if request.starts_with("OPTIONS") {
+        // Handle preflight request
+        let response = "HTTP/1.1 204 No Content\r\n\
+                        Access-Control-Allow-Origin: *\r\n\
+                        Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n\
+                        Access-Control-Allow-Headers: Content-Type\r\n\
+                        Access-Control-Max-Age: 86400\r\n\
+                        \r\n";
+        stream.write(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+        return;
     }
-    Ok(())
+
+    // Your usual request handling logic
+    // Here is an example for a GET request
+    if request.starts_with("GET") {
+        let response = "HTTP/1.1 200 OK\r\n\
+                        Content-Type: text/plain\r\n\
+                        Access-Control-Allow-Origin: *\r\n\
+                        \r\n\
+                        Hello, world!";
+        stream.write(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+    } else if request.starts_with("POST") {
+        let response = "HTTP/1.1 200 OK\r\n\
+                        Content-Type: application/json\r\n\
+                        Access-Control-Allow-Origin: *\r\n\
+                        \r\n\
+                        {\"message\": \"Hello, POST!\"}";
+        stream.write(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+    } else {
+        let response = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
+        stream.write(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+    }
 }
 
-fn handle_connection(mut stream: TcpStream) -> anyhow::Result<()> {
-    let buf_reader = BufReader::new(&mut stream);
-    /*let http_req = buf_reader
-        .lines()
-        .map(|res| res.unwrap())
-        .take_while(|line| !line.is_empty())
-        .collect::<Vec<_>>();
-    println!("Request: {http_req:#?}");*/
-    let request_line = buf_reader.lines().next().unwrap().unwrap();
+fn main() {
+    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
+    println!("Server listening on port 7878");
 
-    if request_line == "GET / HTTP/1.1" {
-        let status_line = "HTTP/1.1 200 OK";
-        let contents = fs::read_to_string("test.html")?;
-        let len = contents.len();
-
-        let response = format!(
-        "{status_line}\r\nContent-Length: {len}\r\nAccess-Control-Allow-Origin: *\r\n\r\n{contents}"
-    );
-
-        stream.write_all(response.as_bytes())?;
+    for stream in listener.incoming() {
+        match stream {
+            Ok(stream) => {
+                thread::spawn(|| {
+                    handle_client(stream);
+                });
+            }
+            Err(e) => {
+                println!("Connection failed: {}", e);
+            }
+        }
     }
-    Ok(())
 }

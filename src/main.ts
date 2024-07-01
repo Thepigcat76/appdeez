@@ -42,16 +42,36 @@ document.getElementById('fetch-button')?.addEventListener('click', () => {
     fetch('http://127.0.0.1:7878', {
         method: 'GET',
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.text();
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(data => {
+            document.getElementById('response')!.innerText = data;
+        })
+        .catch(error => {
+            console.error('There has been a problem with your fetch operation:', error);
+        });
+});
+
+document.getElementById('send-button')?.addEventListener('click', () => {
+    const url = 'http://127.0.0.1:7878';
+    const data = { key1: 'value1', key2: 'value2' };
+
+    fetch(url, {
+        method: 'POST', // or 'PUT'
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
     })
+    .then(response => response.json()) // parses JSON response into native JavaScript objects
     .then(data => {
-        document.getElementById('response')!.innerText = data;
+        console.log('Success:', data);
     })
-    .catch(error => {
-        console.error('There has been a problem with your fetch operation:', error);
+    .catch((error) => {
+        console.error('Error:', error);
     });
 });
