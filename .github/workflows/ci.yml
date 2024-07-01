@@ -34,7 +34,6 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           name: build
-          path: dist
 
   deploy:
     runs-on: ubuntu-latest
