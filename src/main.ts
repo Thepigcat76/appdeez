@@ -25,17 +25,11 @@ scene.add(cube);
 function animate() {
     requestAnimationFrame(animate);
 
-    // Rotate the cube for some basic animation
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-
     renderer.render(scene, camera);
 }
 
 // Start the animation loop
 animate();
-
-console.log("Test")
 
 // Handle window resize
 window.addEventListener('resize', () => {
