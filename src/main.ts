@@ -66,7 +66,11 @@ document.getElementById("fetch-button")?.addEventListener("click", () => {
 });
 
 document.getElementById("send-button")?.addEventListener("click", () => {
-    sendToServer({ key1: "value1", key2: "value2" });
+    sendToServer({
+        key1: "value1", key2: "value2", aaa: [
+            1, 3, 4, 5, 6, 7, 1, 7, 8, 8, 8, 3, 88, 8, 8
+        ]
+    });
 });
 
 function getFromServer(action: (data: string) => void) {

@@ -1,3 +1,7 @@
+mod data;
+mod server;
+mod utils;
+
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 use std::thread;
@@ -7,7 +11,7 @@ fn handle_client(mut stream: TcpStream) {
     stream.read(&mut buffer).unwrap();
     let request = String::from_utf8_lossy(&buffer[..]);
 
-    println!("{}", request);
+    println!("Data: {request}");
 
     if request.starts_with("OPTIONS") {
         // Handle preflight request
@@ -48,6 +52,8 @@ fn handle_client(mut stream: TcpStream) {
 }
 
 fn main() {
+    //let server = Server::new("127.0.0.1:7878");
+
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
     println!("Server listening on port 7878");
 
@@ -63,4 +69,19 @@ fn main() {
             }
         }
     }
+
+    /*
+    let player = PlayerData::new(
+        "Alfred".into(),
+        Vec2f {
+            x: 100f32,
+            y: 200f32,
+        },
+    );
+
+    player.save().unwrap();
+
+    let player = PlayerData::load("Alfred".into());
+    dbg!(&player);
+    */
 }
