@@ -35,6 +35,8 @@ function animate() {
 // Start the animation loop
 animate();
 
+console.log("Test")
+
 // Handle window resize
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
