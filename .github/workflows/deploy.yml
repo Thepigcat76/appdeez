@@ -24,6 +24,9 @@ jobs:
             - name: Install dependencies
               run: pnpm install
 
+            - name: Create dir
+              run: mkdir build
+
             - name: Deploy
               uses: JamesIves/github-pages-deploy-action@v4
               with:
