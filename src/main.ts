@@ -14,6 +14,15 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.position.z = 5;
 
+const ambientLight: THREE.AmbientLight = new THREE.AmbientLight(
+    0xffffff,
+    1.2
+  );
+  const directionalLight: THREE.DirectionalLight = new THREE.DirectionalLight(
+    0xffffff,
+    2.3
+  );
+
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -32,6 +41,8 @@ KeyHandler.createKeyHandler(
 ).setupKeyListeners();
 
 // Add cube to the scene
+directionalLight.position.set(1, 1, 1);
+scene.add(ambientLight).add(directionalLight);
 scene.add(cube);
 
 // Animation loop
