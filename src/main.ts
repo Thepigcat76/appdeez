@@ -2,7 +2,7 @@ import * as THREE from "three";
 import "./style.css";
 import * as NET from "./networking/network_helper";
 import { Renderer } from "./client/renderer";
-import { OrbitControls, RenderPass, TransformControls } from "three/examples/jsm/Addons.js";
+import { RenderPass } from "three/examples/jsm/Addons.js";
 
 async function main() {
     onClientJoin();
@@ -15,35 +15,12 @@ async function main() {
         .setupComposer()
         .setupRaycaster();
 
-    const controls = new OrbitControls(
-        renderer.camera!,
-        renderer.renderer!.domElement
-    );
-    controls.minDistance = -100;
-    controls.maxDistance = 60;
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.25;
-
     const renderPass = new RenderPass(renderer.scene!, renderer.camera!);
     renderer.composer!.addPass(renderPass);
 
     const geometry = new THREE.BoxGeometry();
     const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
     const cube = new THREE.Mesh(geometry, material);
-
-    const transforms = new TransformControls(
-        renderer.camera!,
-        renderer.renderer?.domElement
-    );
-
-    transforms.addEventListener("change", () =>
-        renderer.renderer?.render(renderer.scene!, renderer.camera!)
-    );
-
-    transforms.addEventListener("dragging-changed", function (event) {
-        controls.enabled = !event.value;
-    });
-
 
     renderer.addToScene(cube);
 
