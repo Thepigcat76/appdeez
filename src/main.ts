@@ -3,13 +3,33 @@ import "./style.css";
 import KeyHandler, { Key } from "./client/keybinds";
 import { sendToServer, getFromServer} from "./networking/network_helper";
 import { Renderer } from "./client/renderer";
+import { RenderPass } from "three/examples/jsm/Addons.js";
 
 function main() {
     const renderer = new Renderer()
         .setupRenderer()
         .setupScene()
         .setupCamera(new THREE.Vector3(0, 2, 18))
-        .setupLights();
+        .setupLights()
+        .setupComposer()
+        .setupRaycaster();
+
+    const renderPass = new RenderPass(renderer.scene!, renderer.camera!);
+    renderer.composer!.addPass(renderPass);
+
+    const geometry = new THREE.BoxGeometry();
+    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    const cube = new THREE.Mesh(geometry, material);
+
+    renderer.addToScene(cube);
+
+    renderer.animate();
+
+    renderer.onUpdate = () => {
+        renderer.composer!.render();
+
+        cube.rotation.y = 90;
+    };
 
     window.addEventListener("resize", () => {
         renderer.camera!.aspect = window.innerWidth / window.innerHeight;
@@ -30,8 +50,6 @@ function main() {
             ]
         });
     });
-
-    renderer.animate();
 }
 
 main();
