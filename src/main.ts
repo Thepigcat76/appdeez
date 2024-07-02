@@ -25,9 +25,10 @@ const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 const cube = new THREE.Mesh(geometry, material);
 
 var x = 0;
+var y = 0;
 
 KeyHandler.createKeyHandler(
-    new Map().set([Key.W], up).set([Key.S], () => x -= 0.1)
+    new Map().set([Key.W], up).set([Key.S], () => x -= 0.1).set([Key.D], () => y += 0.1).set([Key.A], () => y -= 0.1)
 ).setupKeyListeners();
 
 // Add cube to the scene
@@ -38,6 +39,7 @@ function animate() {
     requestAnimationFrame(animate);
 
     cube.position.y = x;
+    cube.position.x = y;
 
     renderer.render(scene, camera);
 }

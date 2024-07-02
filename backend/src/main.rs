@@ -54,7 +54,7 @@ fn handle_client(mut stream: TcpStream) {
 fn main() {
     //let server = Server::new("127.0.0.1:7878");
 
-    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
+    let listener = TcpListener::bind("172.31.68.1").unwrap();
     println!("Server listening on port 7878");
 
     for stream in listener.incoming() {
