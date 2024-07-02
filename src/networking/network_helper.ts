@@ -1,5 +1,5 @@
-export function getFromServer(path: string, action: (data: string) => void) {
-    fetch("http://127.0.0.1:7878/"+path, {
+export async function getFromServer(path: string, action: (data: string) => void) {
+    await fetch("http://127.0.0.1:7878/"+path, {
         method: "GET",
     })
         .then((response) => {
@@ -17,10 +17,10 @@ export function getFromServer(path: string, action: (data: string) => void) {
         });
 }
 
-export function sendToServer(path: string, data: any) {
+export async function sendToServer(path: string, data: any) {
     const url = "http://127.0.0.1:7878/"+path;
 
-    fetch(url, {
+    await fetch(url, {
         method: "POST", // or 'PUT'
         headers: {
             "Content-Type": "application/json",

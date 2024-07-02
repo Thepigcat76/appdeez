@@ -1,14 +1,18 @@
-use std::{fs::{self, File}, io::{Read, Write}};
+use std::{
+    fs::{self, File},
+    io::{Read, Write},
+};
 
+use anyhow::bail;
 use serde::{Deserialize, Serialize};
 
-pub mod player;
 pub mod level;
+pub mod player;
 
 const FILE_NAME: &str = "saved_data.json";
 
 pub trait SavedData: Serialize + for<'sd> Deserialize<'sd> {
-    fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
+    fn save(&self) -> anyhow::Result<()> {
         let serialized = serde_json::to_string(self)?;
 
         let mut file = File::create(FILE_NAME)?;
@@ -17,11 +21,12 @@ pub trait SavedData: Serialize + for<'sd> Deserialize<'sd> {
         Ok(())
     }
 
-    fn load(id: String) -> Self {
-        let contents = fs::read(FILE_NAME).unwrap();
-
-        let person = serde_json::from_str(std::str::from_utf8(&contents).unwrap()).unwrap();
-
-        person
+    fn load(_id: String) -> anyhow::Result<Self> {
+        let contents = match fs::metadata(FILE_NAME) {
+            Ok(_) => fs::read_to_string(FILE_NAME).unwrap(),
+            Err(_) => bail!("Failed to load data from file. File does not exist"),
+        };
+        let data = serde_json::from_str(&contents)?;
+        Ok(data)
     }
 }

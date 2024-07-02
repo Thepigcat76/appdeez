@@ -2,18 +2,17 @@ mod data;
 mod server;
 mod utils;
 
-use std::fs::File;
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
-use std::{fs, thread};
 
 use data::level::LevelData;
+use data::SavedData;
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     //let server = Server::new("127.0.0.1:7878");
-    let mut level = LevelData { player_count: 0 };
+    let mut level = LevelData::load(String::new()).unwrap_or(LevelData { player_count: 0 });
 
-    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
+    let listener = TcpListener::bind("127.0.0.1:7878")?;
     println!("Server listening on port 7878");
 
     for stream in listener.incoming() {
@@ -23,22 +22,13 @@ fn main() {
                 println!("Connection failed: {}", e);
             }
         }
+
+        if level.player_count != 0 {
+            level.save()?;
+        }
     }
 
-    /*
-    let player = PlayerData::new(
-        "Alfred".into(),
-        Vec2f {
-            x: 100f32,
-            y: 200f32,
-        },
-    );
-
-    player.save().unwrap();
-
-    let player = PlayerData::load("Alfred".into());
-    dbg!(&player);
-    */
+    Ok(())
 }
 
 fn handle_client(mut stream: TcpStream, level: &mut LevelData) {
@@ -68,7 +58,7 @@ fn handle_client(mut stream: TcpStream, level: &mut LevelData) {
         if let Some(path) = path.get(1) {
             if *path == "/player-count" {
                 println!("Requested player count");
-                println!("Count: {}", level.player_count);
+                println!("readonly count: {}", level.player_count);
                 let response = format!(
                     "HTTP/1.1 200 OK\r\n\
                         Content-Type: text/plain\r\n\
@@ -103,8 +93,9 @@ fn handle_client(mut stream: TcpStream, level: &mut LevelData) {
                         request_data.pop();
                     }
                 }
-                let level_data: LevelData = serde_json::from_str(std::str::from_utf8(&request_data).unwrap()).unwrap();
-                println!("Count: {}", level_data.player_count);
+                let level_data: LevelData =
+                    serde_json::from_str(std::str::from_utf8(&request_data).unwrap()).unwrap();
+                println!("new count: {}", level_data.player_count);
                 level.player_count = level_data.player_count;
             }
         }
