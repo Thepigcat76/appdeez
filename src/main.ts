@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import "./style.css";
-import KeyHandler, { Key } from "./client/keybinds";
 import { sendToServer, getFromServer} from "./networking/network_helper";
 import { Renderer } from "./client/renderer";
 import { OrbitControls, RenderPass, TransformControls } from "three/examples/jsm/Addons.js";
