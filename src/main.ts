@@ -1,17 +1,21 @@
 import * as THREE from "three";
 import "./style.css";
-import { sendToServer, getFromServer} from "./networking/network_helper";
+import * as NET from "./networking/network_helper";
 import { Renderer } from "./client/renderer";
 import { OrbitControls, RenderPass, TransformControls } from "three/examples/jsm/Addons.js";
 
+var playerCount = 0;
+
 function main() {
-    const renderer = new Renderer()
-        .setupRenderer()
-        .setupScene()
-        .setupCamera(new THREE.Vector3(0, 2, 18))
-        .setupLights()
-        .setupComposer()
-        .setupRaycaster();
+  onClientJoin();
+
+  const renderer = new Renderer()
+    .setupRenderer()
+    .setupScene()
+    .setupCamera(new THREE.Vector3(0, 2, 18))
+    .setupLights()
+    .setupComposer()
+    .setupRaycaster();
 
 
   const controls = new OrbitControls(
@@ -23,56 +27,86 @@ function main() {
   controls.enableDamping = true;
   controls.dampingFactor = 0.25;
 
-    const renderPass = new RenderPass(renderer.scene!, renderer.camera!);
-    renderer.composer!.addPass(renderPass);
+  const renderPass = new RenderPass(renderer.scene!, renderer.camera!);
+  renderer.composer!.addPass(renderPass);
 
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
+  const geometry = new THREE.BoxGeometry();
+  const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+  const cube = new THREE.Mesh(geometry, material);
 
-    const transforms = new TransformControls(
-        renderer.camera!,
-        renderer.renderer?.domElement
-      );
-    
-      transforms.addEventListener("change", () =>
-        renderer.renderer?.render(renderer.scene!, renderer.camera!)
-      );
-    
-      transforms.addEventListener("dragging-changed", function (event) {
-        controls.enabled = !event.value;
-      });
-    
+  const transforms = new TransformControls(
+    renderer.camera!,
+    renderer.renderer?.domElement
+  );
 
-    renderer.addToScene(cube);
+  transforms.addEventListener("change", () =>
+    renderer.renderer?.render(renderer.scene!, renderer.camera!)
+  );
 
-    renderer.animate();
+  transforms.addEventListener("dragging-changed", function (event) {
+    controls.enabled = !event.value;
+  });
 
-    renderer.onUpdate = () => {
-        renderer.composer!.render();
 
-        cube.rotation.y = 90;
-    };
+  renderer.addToScene(cube);
 
-    window.addEventListener("resize", () => {
-        renderer.camera!.aspect = window.innerWidth / window.innerHeight;
-        renderer.camera!.updateProjectionMatrix();
-        renderer.renderer!.setSize(window.innerWidth, window.innerHeight);
+  renderer.animate();
+
+  renderer.onUpdate = () => {
+    renderer.composer!.render();
+
+    cube.rotation.y = 90;
+  };
+
+  window.addEventListener("resize", () => {
+    renderer.camera!.aspect = window.innerWidth / window.innerHeight;
+    renderer.camera!.updateProjectionMatrix();
+    renderer.renderer!.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  window.addEventListener("unload", onClientLeave);
+
+  document.getElementById("fetch-button")?.addEventListener("click", () => {
+    NET.getFromServer("", data => {
+      console.log("Data:", data)
     });
-    
-    document.getElementById("fetch-button")?.addEventListener("click", () => {
-        getFromServer(data => {
-            console.log("Data:", data)
-        });
+  });
+
+  document.getElementById("send-button")?.addEventListener("click", () => {
+    NET.sendToServer("", {
+      key1: "value1", key2: "value2", aaa: [
+        1, 3, 4, 5, 6, 7, 1, 7, 8, 8, 8, 3, 88, 8, 8
+      ]
     });
-    
-    document.getElementById("send-button")?.addEventListener("click", () => {
-        sendToServer({
-            key1: "value1", key2: "value2", aaa: [
-                1, 3, 4, 5, 6, 7, 1, 7, 8, 8, 8, 3, 88, 8, 8
-            ]
-        });
+  });
+
+  document.getElementById("get-player-count-button")?.addEventListener("click", () => {
+    NET.getFromServer("player-count", data => {
+      const playerAmountElem = document.getElementById("player-count");
+      const jsonData = JSON.parse(data);
+      playerCount = jsonData.player_count;
+      playerAmountElem!.textContent = "Player Count: " + playerCount;
     });
+  });
+}
+
+function onClientJoin() {
+  NET.sendToServer("player-count", {
+    player_count: playerCount + 1,
+  });
+
+  NET.getFromServer("player-count", data => {
+    const playerAmountElem = document.getElementById("player-count");
+    const jsonData = JSON.parse(data);
+    playerCount = jsonData.player_count;
+    playerAmountElem!.textContent = "Player Count: " + playerCount;
+  });
+}
+
+function onClientLeave(_: Event) {
+  NET.sendToServer("player-count", {
+    player_count: playerCount - 1,
+  })
 }
 
 main();
