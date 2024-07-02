@@ -15,7 +15,6 @@ async function main() {
         .setupComposer()
         .setupRaycaster();
 
-
     const controls = new OrbitControls(
         renderer.camera!,
         renderer.renderer!.domElement

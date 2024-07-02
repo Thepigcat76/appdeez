@@ -11,7 +11,10 @@ pub mod player;
 
 const FILE_NAME: &str = "saved_data.json";
 
-pub trait SavedData: Serialize + for<'sd> Deserialize<'sd> {
+pub trait SavedData
+where
+    Self: Serialize + for<'sd> Deserialize<'sd>,
+{
     fn save(&self) -> anyhow::Result<()> {
         let serialized = serde_json::to_string(self)?;
 
