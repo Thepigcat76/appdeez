@@ -4,8 +4,6 @@ import * as NET from "./networking/network_helper";
 import { Renderer } from "./client/renderer";
 import { OrbitControls, RenderPass, TransformControls } from "three/examples/jsm/Addons.js";
 
-var playerCount = 0;
-
 function main() {
   onClientJoin();
 
@@ -84,29 +82,26 @@ function main() {
     NET.getFromServer("player-count", data => {
       const playerAmountElem = document.getElementById("player-count");
       const jsonData = JSON.parse(data);
-      playerCount = jsonData.player_count;
+      const playerCount = jsonData.player_count;
       playerAmountElem!.textContent = "Player Count: " + playerCount;
     });
   });
 }
 
 function onClientJoin() {
-  NET.sendToServer("player-count", {
-    player_count: playerCount + 1,
-  });
-
   NET.getFromServer("player-count", data => {
     const playerAmountElem = document.getElementById("player-count");
     const jsonData = JSON.parse(data);
-    playerCount = jsonData.player_count;
+    const playerCount = jsonData.player_count + 1;
     playerAmountElem!.textContent = "Player Count: " + playerCount;
+
+    NET.sendToServer("player-count", {
+      player_count: playerCount,
+    });
   });
 }
 
 function onClientLeave(_: Event) {
-  NET.sendToServer("player-count", {
-    player_count: playerCount - 1,
-  })
 }
 
 main();

@@ -46,8 +46,6 @@ fn handle_client(mut stream: TcpStream, level: &mut LevelData) {
     stream.read(&mut buffer).unwrap();
     let request = String::from_utf8_lossy(&buffer[..]);
 
-    println!("Data: {request}");
-
     if request.starts_with("OPTIONS") {
         // Handle preflight request
         let response = "HTTP/1.1 204 No Content\r\n\
@@ -70,6 +68,7 @@ fn handle_client(mut stream: TcpStream, level: &mut LevelData) {
         if let Some(path) = path.get(1) {
             if *path == "/player-count" {
                 println!("Requested player count");
+                println!("Count: {}", level.player_count);
                 let response = format!(
                     "HTTP/1.1 200 OK\r\n\
                         Content-Type: text/plain\r\n\
@@ -105,6 +104,7 @@ fn handle_client(mut stream: TcpStream, level: &mut LevelData) {
                     }
                 }
                 let level_data: LevelData = serde_json::from_str(std::str::from_utf8(&request_data).unwrap()).unwrap();
+                println!("Count: {}", level_data.player_count);
                 level.player_count = level_data.player_count;
             }
         }
